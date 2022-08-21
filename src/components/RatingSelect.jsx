@@ -14,7 +14,7 @@ function RatingSelect({ select, selected }) {
     if (feedbackEdit.item.rating) {
       select(+feedbackEdit.item.rating);
     }
-  }, [feedbackEdit]);
+  }, [feedbackEdit, select]);
 
   return (
     <ul className="rating">
