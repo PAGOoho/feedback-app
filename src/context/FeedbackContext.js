@@ -1,34 +1,64 @@
-import { v4 as uuidv4 } from 'uuid';
-import { createContext, useState } from "react";
-
-import FeedbackData from '../data/FeedbackData';
+import { createContext, useState, useEffect } from "react";
 
 const FeedbackContext = createContext();
 
 export const FeedbackProvider = ({children}) => {
-  const [feedback, setFeedback] = useState(FeedbackData);
+  const [isLoading, setIsLoading] = useState(true);
+  const [feedback, setFeedback] = useState([]);
   const [feedbackEdit, setFeedbackEdit] = useState({
     item: {},
     edit: false
   });
 
-  const deleteFeedback = (id) => {
+  useEffect(() => {
+    fetchFeedback();
+  }, []);
+
+  const fetchFeedback = async () => {
+    const response = await fetch('/feedback?_sort=id&_order=desc');
+    const data = await response.json();
+
+    setFeedback(data);
+    setIsLoading(false);
+  }
+
+  const deleteFeedback = async (id) => {
     if (window.confirm('Are you sure you want to delete Feedback?')) {
-      setFeedback(feedback.filter((item) => item.id !== id));
+      await fetch(`/feedback/${id}`, {
+        method: 'DELETE',
+      });
+
+      fetchFeedback();
     }
   };
 
-  const addFeedback = (newFeedback) => {
-    newFeedback.id = uuidv4();
-    setFeedback([newFeedback, ...feedback]);
+  const addFeedback = async (newFeedback) => {
+    await fetch('/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newFeedback),
+    });
+
+    fetchFeedback();
   };
 
-  const updateFeedback = (id, updItem) => {
-    setFeedback(feedback.map((item) => item.id === id ? {...item, ...updItem} : item));
+  const updateFeedback = async (id, updFeedback) => {
+    await fetch(`/feedback/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updFeedback),
+    });
+    
     setFeedbackEdit({
       item: false,
       edit: false,
     });
+    
+    fetchFeedback();
   }
 
   const editFeedback = (item) => {
@@ -45,6 +75,7 @@ export const FeedbackProvider = ({children}) => {
     updateFeedback,
     feedback,
     feedbackEdit,
+    isLoading,
   }}>
     {children}
   </FeedbackContext.Provider>
