@@ -12,6 +12,7 @@ export const FeedbackProvider = ({children}) => {
 
   useEffect(() => {
     fetchFeedback();
+    console.log("PENIS");
   }, []);
 
   const fetchFeedback = async () => {
